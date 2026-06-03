@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class StudentModel extends Model
 {
     protected $table = 'student';
-    protected $fillable = ['first_name', 'last_name', 'email', 'gender', 'phone', 'address', 'course', 'year'];
+    protected $fillable = ['first_name', 'last_name', 'email', 'gender', 'phone', 'address', 'course', 'year', 'profile_image'];
 
     public function getFullNameAttribute()
     {

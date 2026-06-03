@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StudentModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
 {
@@ -17,6 +18,10 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate($this->rules());
+
+        if ($request->hasFile('profile_image')) {
+            $validated['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
+        }
 
         StudentModel::create($validated);
 
@@ -36,6 +41,14 @@ class StudentController extends Controller
 
         $validated = $request->validate($this->rules($student->id));
 
+        if ($request->hasFile('profile_image')) {
+            if ($student->profile_image) {
+                Storage::disk('public')->delete($student->profile_image);
+            }
+
+            $validated['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
+        }
+
         $student->update($validated);
 
         return redirect()->route('student.info')->with('success', 'Student updated successfully');
@@ -43,7 +56,13 @@ class StudentController extends Controller
 
     public function destroy(string $id)
     {
-        StudentModel::findOrFail($id)->delete();
+        $student = StudentModel::findOrFail($id);
+
+        if ($student->profile_image) {
+            Storage::disk('public')->delete($student->profile_image);
+        }
+
+        $student->delete();
 
         return redirect()->route('student.info')->with('success', 'Student deleted successfully');
     }
@@ -65,6 +84,7 @@ class StudentController extends Controller
             'address' => 'required|string|max:255',
             'course' => 'required|string|max:255',
             'year' => 'required|string|max:50',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
     }
 }
